@@ -1,8 +1,8 @@
-name: Deployment With JavaScript
+name: Deployment With Docker
 on:
   push:
     branches:
-      - main2
+      - main
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -78,17 +78,16 @@ jobs:
           path: ./dist
       - name: Output contents
         run: ls
-      - name: Install action dependencies
-        run: |
-          cd .github/actions/deploy-s3-javascript
-          npm ci
       - name: Deploy site
-        uses: ./.github/actions/deploy-s3-javascript
+        id: deploy
+        uses: ./.github/actions/deploy-s3-docker
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
         with:
           bucket: gha-firattale-custom-action-hosting
-          bucket-region: eu-central-1
           dist-folder: ./dist
+      - name: Output information
+        run: |
+          echo "Live URL: ${{ steps.deploy.outputs.website-url }}"
